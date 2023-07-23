@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\ManagementAccess\DetailUser;
+use App\Models\ManagementAccess\RoleUser;
+use App\Models\Operational\Appointment;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -17,23 +21,23 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+    use SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
+    public $table = 'users';
+
+    protected $dates = [
+        'email_verified_at',
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
@@ -41,21 +45,26 @@ class User extends Authenticatable
         'two_factor_secret',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * The accessors to append to the model's array form.
-     *
-     * @var array<int, string>
-     */
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function appointment()
+    {
+        return $this->hasMany(Appointment::class, 'user_id', 'id');
+    }
+
+    public function detail_user()
+    {
+        return $this->hasOne(DetailUser::class, 'user_id', 'id');
+    }
+
+    public function role_user()
+    {
+        return $this->hasMany(RoleUser::class, 'user_id', 'id');
+    }
 }
